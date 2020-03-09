@@ -15,3 +15,36 @@
  */
 
 package com.example.android.trackmysleepquality.database
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+
+// this is the DB
+@Database(entities = [SleepNight::class], version = 1, exportSchema = false)//this tells the DB the entity to use
+abstract class SleepDatabase: RoomDatabase(){
+
+    abstract val sleepDatabaseDao: SleepDatabaseDao // this tells the DB to use the DAO specified
+
+    // companion objects allow one to use the DB without instantiating it
+    companion object{
+        @Volatile // Volatile ensure the value of Db is always up-to-date across various threads
+        private var INSTANCE: SleepDatabase? = null
+        fun getInstance(context: Context): SleepDatabase{
+            synchronized(this){ // this runs on one thread
+                var instance = INSTANCE  // we have to assign INSTANCE to a local var before we return it
+                if (instance == null){
+                    instance = Room.databaseBuilder(context.applicationContext,
+                    SleepDatabase::class.java,
+                    "sleep_histroy_database").fallbackToDestructiveMigration().build()
+
+                    INSTANCE = instance
+
+                }
+                return instance
+            }
+        }
+
+    }
+}
