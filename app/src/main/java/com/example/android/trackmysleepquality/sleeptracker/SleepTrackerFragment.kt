@@ -65,6 +65,16 @@ class SleepTrackerFragment : Fragment() {
         //set the variable in layout to access through the binding object
         binding.sleepTrackerViewModel = sleepTrackerViewModel
 
+        // telling the this fragment to use the adapter we created
+        val adapter = SleepNightAdapter()
+        binding.sleepList.adapter = adapter
+
+        sleepTrackerViewModel.nights.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                adapter.data = it
+            }
+        })
+
         sleepTrackerViewModel.navigateToSleepQuality.observe(this, Observer {
             night ->
             night?.let {
