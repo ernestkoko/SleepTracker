@@ -13,14 +13,14 @@ import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.ListItemSleepNightBinding
 
 
-class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()) {
+class SleepNightAdapter(val clickListerner: SleepNightListener): ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()) {
 
 
     //tells the RecyclerView how to bind/draw the data to views
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = getItem(position)
-        val res = holder.itemView.context.resources
-        holder.bind(item)
+       // val item = getItem(position)
+        holder.bind( clickListerner, getItem(position)!!)
+
     }
 
 
@@ -39,8 +39,9 @@ class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(S
             RecyclerView.ViewHolder(binding.root){
 
         // details of how to update views
-       fun bind(item: SleepNight) {
+       fun bind(clickListener: SleepNightListener, item: SleepNight) {
             binding.sleep = item
+            binding.clickListener = clickListener
             binding.executePendingBindings()
         }
          // methods in companion object can be called without the instance of the class they are in
@@ -68,5 +69,10 @@ class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(S
             }
 
         }
+
+     //listener class for the recycler view items
+    class SleepNightListener(val clickListener: (sleepId: Long) -> Unit){
+         fun onClick(night: SleepNight) = clickListener(night.nightId)
+     }
 
 }
