@@ -37,7 +37,7 @@ abstract class SleepDatabase: RoomDatabase(){
                 if (instance == null){
                     instance = Room.databaseBuilder(context.applicationContext,
                     SleepDatabase::class.java,
-                    "sleep_histroy_database").fallbackToDestructiveMigration().build()
+                    "sleep_history_database").fallbackToDestructiveMigration().build()
 
                     INSTANCE = instance
 

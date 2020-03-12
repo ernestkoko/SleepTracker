@@ -69,11 +69,11 @@ class SleepTrackerViewModel(
 
     private fun initializeTonight() {
         uisScope.launch {
-            tonight.value = getTonightFromDatabae()
+            tonight.value = getTonightFromDatabase()
         }
     }
 
-    private suspend fun getTonightFromDatabae(): SleepNight? { // the suspend keyword ensures the function does not bock
+    private suspend fun getTonightFromDatabase(): SleepNight? { // the suspend keyword ensures the function does not bock
         return withContext(Dispatchers.IO){
             var night = database.getTonight()
             if (night?.endTimeMilli != night?.startTimeMilli){
@@ -87,7 +87,7 @@ class SleepTrackerViewModel(
         uisScope.launch {
             val newNight = SleepNight()
             insert(newNight)
-            tonight.value = getTonightFromDatabae()
+            tonight.value = getTonightFromDatabase()
         }
     }
     private suspend fun insert(night: SleepNight){
