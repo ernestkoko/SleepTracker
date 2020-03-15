@@ -33,6 +33,18 @@ class SleepTrackerViewModel(
         val database: SleepDatabaseDao,
         application: Application) : AndroidViewModel(application) {
 
+    private val _navigateToSleepDataQuality = MutableLiveData<Long>()
+    val navigateToSleepDataQuality
+        get() = _navigateToSleepDataQuality
+
+    fun onSleepNightClicked(id: Long){
+        _navigateToSleepDataQuality.value = id
+    }
+
+    fun onSleepDataQualityNavigated() {
+        _navigateToSleepDataQuality.value = null
+    }
+
     //this Job allows us cancel all coroutine started by this job when not needed
     private var viewModelJob = Job()
 
@@ -43,13 +55,13 @@ class SleepTrackerViewModel(
         viewModelJob.cancel()
     }
 
-    //the scope dtermines what thread the coroutine will run on
-    private val uisScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+    //the scope determines what thread the Coroutine will run on
+    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     private var tonight = MutableLiveData<SleepNight?>()
     val nights = database.getAllNights()
 
-    //formating the to strings. it executes every time night changes
+    //formatting to strings. it executes every time night changes
     val nightsString = Transformations.map(nights){nights ->
         formatNights(nights, application.resources)
     }
@@ -68,12 +80,12 @@ class SleepTrackerViewModel(
     }
 
     private fun initializeTonight() {
-        uisScope.launch {
+        uiScope.launch {
             tonight.value = getTonightFromDatabase()
         }
     }
 
-    private suspend fun getTonightFromDatabase(): SleepNight? { // the suspend keyword ensures the function does not bock
+    private suspend fun getTonightFromDatabase(): SleepNight? { // the suspend keyword ensures the function does not block
         return withContext(Dispatchers.IO){
             var night = database.getTonight()
             if (night?.endTimeMilli != night?.startTimeMilli){
@@ -84,7 +96,7 @@ class SleepTrackerViewModel(
 
     }
     fun onStartTracking(){
-        uisScope.launch {
+        uiScope.launch {
             val newNight = SleepNight()
             insert(newNight)
             tonight.value = getTonightFromDatabase()
@@ -96,7 +108,7 @@ class SleepTrackerViewModel(
         }
     }
     fun onStopTracking(){
-        uisScope.launch{
+        uiScope.launch{
             val oldNight = tonight.value ?: return@launch
             oldNight.endTimeMilli = System.currentTimeMillis()
             update(oldNight)
@@ -110,10 +122,16 @@ class SleepTrackerViewModel(
 
     }
     fun onClear(){
-        uisScope.launch {
+        uiScope.launch {
             clear()
             tonight.value = null
             _showSnackbarEvent.value = true
+        }
+    }
+    suspend fun clear(){
+        withContext(Dispatchers.IO){
+            database.clear()
+
         }
     }
     val startButtonVisible = Transformations.map(tonight) {
@@ -135,12 +153,7 @@ class SleepTrackerViewModel(
         _showSnackbarEvent.value = false
     }
 
-    suspend fun clear(){
-        withContext(Dispatchers.IO){
-            database.clear()
 
-        }
-    }
 
 }
 
